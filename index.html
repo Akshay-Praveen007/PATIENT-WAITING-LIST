@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hospital Patient Waiting List System</title>
+<style>
+:root{--bg:#f1f6fd;--card:#fff;--tx:#14233c;--mu:#5b6b85;--bd:#d6e2f5;--pr:#1f6feb;--pr2:#0b4fc2;--lt:#e6f0ff;--ok:#1a9b5a;--er:#d93a3a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1424;--card:#13203a;--tx:#e6eefc;--mu:#93a6c6;--bd:#243a63;--lt:#1a2d52}}
+:root[data-theme="dark"]{--bg:#0b1424;--card:#13203a;--tx:#e6eefc;--mu:#93a6c6;--bd:#243a63;--lt:#1a2d52}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Segoe UI",Roboto,Arial,sans-serif;line-height:1.45}
+nav{background:var(--pr2);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+nav b{font-size:18px}nav span{font-size:13px;opacity:.85}
+.hero{background:linear-gradient(135deg,#1f6feb,#0b4fc2);color:#fff;padding:28px 18px 54px;text-align:center}
+.hero h1{margin:0 0 6px;font-size:clamp(22px,6vw,32px)}
+.hero p{margin:0;opacity:.9}
+main{max-width:960px;margin:-34px auto 30px;padding:0 14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border-radius:12px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(20,60,140,.15)}
+.stat b{display:block;font-size:24px;color:var(--pr)}.stat span{font-size:12px;color:var(--mu)}
+.grid{display:grid;gap:14px}
+@media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px}
+.grid .card{margin-bottom:0}
+h2{margin:0 0 10px;font-size:17px;color:var(--pr)}
+label{display:block;font-size:13px;color:var(--mu);margin:8px 0 3px}
+input{width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:15px}
+input:focus{outline:2px solid var(--pr);border-color:transparent}
+button{border:0;border-radius:8px;padding:10px 14px;font-size:15px;font-weight:600;cursor:pointer;background:var(--pr);color:#fff;margin-top:12px}
+button:hover{background:var(--pr2)}
+button.sec{background:var(--lt);color:var(--pr)}
+button.sec:hover{background:var(--bd)}
+button.red{background:var(--er)}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}.btnrow button{margin-top:0}
+.srch{display:flex;gap:8px}.srch button{margin-top:0}
+.wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:var(--pr);color:#fff;text-align:left;padding:9px}
+th:first-child{border-radius:8px 0 0 0}th:last-child{border-radius:0 8px 0 0}
+td{padding:9px;border-bottom:1px solid var(--bd)}
+tr.hit td{background:var(--lt);font-weight:600}
+#msg{background:var(--lt);border-left:4px solid var(--pr);border-radius:6px;padding:10px 12px;white-space:pre-line;min-height:44px}
+#msg.err{border-color:var(--er)}#msg.good{border-color:var(--ok)}
+.empty{color:var(--mu);text-align:center;padding:14px}
+footer{text-align:center;color:var(--mu);font-size:12px;padding-bottom:20px}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Hospital Patient Waiting List System</h1>
+  <p>Register, serve, view and search patients in the queue</p>
+</div>
+
+<main>
+  <div class="stats">
+    <div class="stat"><b id="sCount">0</b><span>Waiting</span></div>
+    <div class="stat"><b id="sFront">-</b><span>Front ID</span></div>
+    <div class="stat"><b id="sRear">-</b><span>Rear ID</span></div>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Register Patient (Enqueue)</h2>
+      <label for="id">Patient ID</label><input id="id" type="number" inputmode="numeric">
+      <label for="name">Patient Name</label><input id="name" maxlength="49">
+      <label for="age">Age</label><input id="age" type="number" inputmode="numeric">
+      <label for="ailment">Ailment / Condition</label><input id="ailment" maxlength="49">
+      <button onclick="enqueue()">Add Patient</button>
+    </section>
+
+    <section class="card">
+      <h2>Queue Options</h2>
+      <div class="btnrow">
+        <button onclick="dequeue()">Serve Next Patient</button>
+        <button class="sec" onclick="displayQueue()">Display List</button>
+        <button class="red" onclick="exitProgram()">Exit</button>
+      </div>
+      <label for="searchId">Search Patient by ID</label>
+      <div class="srch"><input id="searchId" type="number" inputmode="numeric"><button class="sec" onclick="searchPatient()">Search</button></div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:14px">
+    <h2>Output</h2>
+    <div id="msg">Welcome! Choose an option to begin.</div>
+  </section>
+
+  <section class="card wrap">
+    <h2>Current Waiting List</h2>
+    <div id="list"></div>
+  </section>
+</main>
+
+<footer>Hospital Patient Waiting List &middot; Queue using Linked List (C)</footer>
+
+<script>
+var queue = [];   // front = index 0, rear = last index
+var exited = false;
+
+function show(text, type) {
+  var m = document.getElementById("msg");
+  m.textContent = text;
+  m.className = type || "";
+}
+
+function checkExit() {
+  if (exited) { show("Program has exited. Refresh the page to start again.", "err"); return true; }
+  return false;
+}
+
+function updateStats() {
+  document.getElementById("sCount").textContent = queue.length;
+  document.getElementById("sFront").textContent = queue.length ? queue[0].id : "-";
+  document.getElementById("sRear").textContent = queue.length ? queue[queue.length - 1].id : "-";
+}
+
+function renderList(hit) {
+  var div = document.getElementById("list");
+  updateStats();
+  if (queue.length == 0) { div.innerHTML = '<div class="empty">Queue is Empty!</div>'; return; }
+  div.innerHTML = "<table><thead><tr><th>Pos</th><th>ID</th><th>Name</th><th>Age</th><th>Ailment</th></tr></thead><tbody></tbody></table>";
+  var body = div.getElementsByTagName("tbody")[0];
+  for (var i = 0; i < queue.length; i++) {
+    var tr = body.insertRow();
+    if (i === hit) tr.className = "hit";
+    var vals = [i + 1, queue[i].id, queue[i].name, queue[i].age, queue[i].ailment];
+    for (var j = 0; j < vals.length; j++) tr.insertCell().textContent = vals[j];
+  }
+}
+
+function enqueue() {
+  if (checkExit()) return;
+  var id = parseInt(document.getElementById("id").value);
+  var name = document.getElementById("name").value.trim();
+  var age = parseInt(document.getElementById("age").value);
+  var ailment = document.getElementById("ailment").value.trim();
+  if (isNaN(id) || isNaN(age) || name == "" || ailment == "") {
+    show("Invalid input! Please fill all fields correctly.", "err");
+    return;
+  }
+  queue.push({ id: id, name: name, age: age, ailment: ailment });
+  ["id", "name", "age", "ailment"].forEach(function (k) { document.getElementById(k).value = ""; });
+  show("Success: Patient added to the waiting list!", "good");
+  renderList();
+}
+
+function dequeue() {
+  if (checkExit()) return;
+  if (queue.length == 0) { show("Queue is Empty! No patients waiting.", "err"); return; }
+  var p = queue.shift();
+  show("--- Now Serving Patient ---\nPatient ID: " + p.id + "\nName: " + p.name +
+       "\nAge: " + p.age + "\nCondition: " + p.ailment +
+       "\n\nPatient has been removed from the waiting list.", "good");
+  renderList();
+}
+
+function displayQueue() {
+  if (checkExit()) return;
+  if (queue.length == 0) { show("Queue is Empty! No patients in the waiting list.", "err"); }
+  else { show("Displaying " + queue.length + " patient(s) in the waiting list."); }
+  renderList();
+}
+
+function searchPatient() {
+  if (checkExit()) return;
+  if (queue.length == 0) { show("Queue is Empty! Cannot search.", "err"); return; }
+  var sid = parseInt(document.getElementById("searchId").value);
+  if (isNaN(sid)) { show("Invalid input! Please enter a number.", "err"); return; }
+  for (var i = 0; i < queue.length; i++) {
+    if (queue[i].id == sid) {
+      var p = queue[i];
+      show("Patient Found at Position " + (i + 1) + " in the queue!\nID: " + p.id +
+           "\nName: " + p.name + "\nAge: " + p.age + "\nCondition: " + p.ailment, "good");
+      renderList(i);
+      return;
+    }
+  }
+  show("Patient with ID " + sid + " not found in the waiting list.", "err");
+  renderList();
+}
+
+function exitProgram() {
+  exited = true;
+  show("Exiting program. Stay healthy!");
+}
+
+renderList();
+</script>
+</body>
+</html>
